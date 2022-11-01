@@ -1,0 +1,39 @@
+<section>
+    <style>
+        .bg {
+            background-color: #343a40;
+            padding: 2rem;
+            border-radius: 1.5rem;
+        }
+    </style>
+    <div class="container m-5 ">
+        <div class="bg">
+            <form action="/admin/add-product" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label class="text-light" for="exampleInputEmail1">Name</label>
+                    <input type="text" class="form-control" name="name" id="Name" aria-describedby="emailHelp"
+                        placeholder="Enter product name">
+                    {{!-- <small class="text-light" id="emailHelp" class="form-text text-muted">We'll never share your
+                        email with anyone
+                        else.</small> --}}
+                </div>
+                <div class="form-group">
+                    <label class="text-light" for="exampleInputPassword1">Category</label>
+                    <input type="text" class="form-control" name="category" id="Category" placeholder="product category">
+                </div>
+
+                <div class="form-group">
+                    <label class="text-light" for="exampleInputPassword1">Description</label>
+                    <textarea class="form-control" id="Description" name="description" rows="3" placeholder="product description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="text-light" for="exampleFormControlFile1">Product Image</label>
+                    <input type="file" class="form-control-file text-light" name="image"  id="image">
+                </div>
+                <button type="submit" class="btn btn-primary">Add product</button>
+            </form>
+        </div>
+
+    </div>
+</section>
