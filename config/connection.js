@@ -5,7 +5,7 @@ const state = {
 
 function connect(done) {
   const url = "mongodb://localhost:27017";
-  const dbname = "shopping";
+  const dbname = "ECOMMERCE";
 
   mongoClient.connect(url, (err, data) => {
     if (err) return done(err);

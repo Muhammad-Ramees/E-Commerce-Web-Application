@@ -16,10 +16,11 @@
                     <a class="nav-link text-light" href="#">Products <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                        <a class="nav-link text-light" href="/cart">cart <span class="badge badge-pill badge-warning">{{cart}}</span>
-</a>
-                        
-                    
+                    <a class="nav-link text-light" href="/cart">cart <span class="badge badge-pill badge-warning"
+                            id="cart-count">{{cart}}</span>
+                    </a>
+
+
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-light" href="#">Pricing</a>
@@ -38,7 +39,9 @@
                     </a>
 
                     <div class="dropdown-menu ml-auto" aria-labelledby="navbarDropdown">
-                        {{#if user}} <a class="dropdown-item" href="/logout">Logout</a>
+                        {{#if user}}
+                        <a class="dropdown-item" href="/profile">Prodile</a>
+                        <a class="dropdown-item" href="/logout">Logout</a>
 
                         {{else}}
                         <a class="dropdown-item" href="/login">Login</a>

@@ -1,15 +1,13 @@
 <style>
-    .cen{
-            justify-content: center;
+    .cen {
+        justify-content: center;
     }
 </style>
 <section>
-        <link rel="stylesheet" href="/stylesheets/card.css">
+    <link rel="stylesheet" href="/stylesheets/card.css" />
 
     <div class="container mt-5">
         <div class="row cen">
-            
-
 
             {{!--
             {{#each products}}
@@ -26,24 +24,22 @@
 
             {{/each}} --}}
 
-
             {{#each products}}
             <div class="card">
 
+
                 <div class="imgBox">
-                    <img src="/product-images/{{this._id}}.jpg" alt="mouse corsair" class="mouse">
+                    <img src="/product-images/{{this._id}}.jpg" alt="mouse corsair" class="mouse" />
                 </div>
 
                 <div class="contentBox">
                     <h3>{{this.name}}</h3>
                     <h2 class="price">61.<small>98</small> €</h2>
-                    <a href="/add-to-cart/{{this._id}}" class="buy">Add to cart</a>
+                    <button onclick="addToCart('{{this._id}}')" class="buy">Add to cart</button>
                 </div>
 
             </div>
             {{/each}}
-
-
 
         </div>
     </div>

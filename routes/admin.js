@@ -1,27 +1,28 @@
 var express = require("express");
 const { response } = require("../app");
-const admin_helpers = require("../helper/admin_helpers");
+const adminHelpers = require("../helper/admin_helpers");
 var router = express.Router();
 var productHelpers = require("../helper/product_helpers");
 
 /* VERIFY LOGIN */
 const verifyLogin = (req, res, next) => {
-  if (req.session.loggedIn) {
+  if (req.session.adminLoggedIn) {
     next();
   } else {
-    res.redirect("/admin-login");
+    res.redirect("admin/admin-login");
   }
 };
 
 /* GET users listing.================================ */
-router.get("/", function (req, res, next) {
+router.get("/", verifyLogin, function (req, res, next) {
+  let admin = req.session.admin;
   productHelpers.getAllProducts().then((products) => {
-    res.render("admin/view-product", { products, admin: true });
+    res.render("admin/view-product", { products, admin, admins: true });
   });
 });
 
 /* GET Add-ProDuct PAGE========================================== */
-router.get("/add-product", (req, res, next) => {
+router.get("/add-product", verifyLogin, (req, res, next) => {
   res.render("admin/add-product");
 });
 
@@ -39,6 +40,7 @@ router.post("/add-product", (req, res) => {
     });
   });
 });
+
 /*DELETE PRODUCT===================================== */
 router.get("/delete-product/:id", (req, res, next) => {
   let proId = req.params.id;
@@ -53,12 +55,14 @@ router.get("/delete-product/:id", (req, res, next) => {
     });
 });
 
-router.get("/edit-product/:id", async (req, res) => {
+//GET EDIT PAGE =================================
+router.get("/edit-product/:id", verifyLogin, async (req, res) => {
   let product = await productHelpers.getProductDetails(req.params.id);
   console.log(product);
   res.render("admin/edit-product", { product, admin: true });
 });
 
+//EDIT PRODUCT BY ID =================================================
 router.post("/edit-product/:id", (req, res, next) => {
   console.log(req.params.id);
   let id = req.params.id;
@@ -75,35 +79,33 @@ router.post("/edit-product/:id", (req, res, next) => {
       return next(err);
     });
 });
-router.get("/admin-signup", (req, res) => {
-  res.render("user/admin-signup", { admin: true });
-});
+//ADMIN SIGNUP PAGE =================================================================
 
-//Post Signup page
-router.post("/admin-signup", (req, res, next) => {
-  admin_helpers
-    .doSignup(req.body)
-    .then((response) => {
-      console.log(response);
-      req.session.loggedIn = true;
-      req.session.user = response;
-      res.redirect("/admin");
-    })
-    .catch((err) => {
-      return next(err);
-    });
-});
+//ADMIN SIGNUP===================
+// router.post("/admin-signup", (req, res, next) => {
+//   adminHelpers
+//     .doSignup(req.body)
+//     .then((response) => {
+//       console.log(response);
+//       req.session.loggedIn = true;
+//       req.session.admin = response;
+//       res.redirect("/admin");
+//     })
+//     .catch((err) => {
+//       return next(err);
+//     });
+// });
 
 //Get Login page
-router.get("/admin-login", (req, res, next) => {
-  if (req.session.loggedIn) {
-    res.redirect("/admin");
+router.get("/admin-login", (req, res) => {
+  if (req.session.adminLoggedIn) {
+    res.redirect("/");
   } else {
     res.render("admin/admin-login", {
-      loginErr: req.session.loginErr,
+      loginErr: req.session.adminLoginErr,
       admin: true,
     });
-    req.session.loginErr = false;
+    req.session.adminLoginErr = false;
   }
 });
 
@@ -114,12 +116,12 @@ router.post("/admin-login", (req, res, next) => {
     .then((response) => {
       console.log(req.body);
       if (response.status) {
-        req.session.loggedIn = true;
-        req.session.user = response.user;
-        res.redirect("/");
+        req.session.adminLoggedIn = true;
+        req.session.admin = response.admin;
+        res.redirect("/admin");
       } else {
-        req.session.loginErr = "Invalid username/email or password";
-        res.redirect("/admin-login");
+        req.session.adminLoginErr = "Invalid username/email or password";
+        res.redirect("admin/admin-login");
       }
     })
     .catch((err) => {
@@ -130,7 +132,7 @@ router.post("/admin-login", (req, res, next) => {
 //logout from home page
 router.get("/admin-logout", (req, res) => {
   req.session.destroy();
-  res.redirect("/admin-login");
+  res.redirect("admin/admin-login");
 });
 
 module.exports = router;

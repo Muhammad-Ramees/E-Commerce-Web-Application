@@ -1,0 +1,35 @@
+<section class="m-5">
+  <div class="container">
+    <div class="row">
+      <a class="btn btnn ml-auto m-2 mr-3" href="/superAdmin/add-product">Add product</a>
+    </div>
+    <div class="frost-table">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Image</th>
+            <th scope="col">Name</th>
+            <th scope="col">Category</th>
+            <th scope="col">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each products}}
+          <tr class="tr">
+            <td style="width:10px;" data-label="Image"><img style="border-radius:.5rem" width="50px" height="50px"
+                src="/product-images/{{this._id}}.jpg" alt=""></td>
+            <td data-label="Name">{{this.name}}</td>
+            <td data-label="Category">{{this.category}}</td>
+            <td data-label="Description">{{this.description}}</td>
+            <td><a class="btn btn-primary" href="/superAdmin/edit-product/{{this._id}}">edit</a>
+              <a class="btn btn-danger" href="/superAdmin/delete-product/{{this._id}}"
+                onclick="return confirm('Are you sure want to delete {{this.name}}')">remove</a>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
