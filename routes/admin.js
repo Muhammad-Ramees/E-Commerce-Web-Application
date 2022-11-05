@@ -6,7 +6,7 @@ var productHelpers = require("../helper/product_helpers");
 
 /* VERIFY LOGIN */
 const verifyLogin = (req, res, next) => {
-  if (req.session.adminLoggedIn) {
+  if (req.session.LoggedIn) {
     next();
   } else {
     res.redirect("admin/admin-login");
@@ -98,14 +98,14 @@ router.post("/edit-product/:id", (req, res, next) => {
 
 //Get Login page
 router.get("/admin-login", (req, res) => {
-  if (req.session.adminLoggedIn) {
+  if (req.session.LoggedIn) {
     res.redirect("/");
   } else {
     res.render("admin/admin-login", {
-      loginErr: req.session.adminLoginErr,
+      LoginErr: req.session.LoginErr,
       admin: true,
     });
-    req.session.adminLoginErr = false;
+    req.session.LoginErr = false;
   }
 });
 
@@ -116,11 +116,11 @@ router.post("/admin-login", (req, res, next) => {
     .then((response) => {
       console.log(req.body);
       if (response.status) {
-        req.session.adminLoggedIn = true;
+        req.session.LoggedIn = true;
         req.session.admin = response.admin;
         res.redirect("/admin");
       } else {
-        req.session.adminLoginErr = "Invalid username/email or password";
+        req.session.LoginErr = "Invalid username/email or password";
         res.redirect("admin/admin-login");
       }
     })

@@ -30,7 +30,10 @@
                             <span id="{{this.product._id}}">{{this.quantity}}</span>
                             <button onclick="changeQuantity('{{this._id}}','{{this.product._id}}',1)">+</button>
                         </div>
-                        <div class="col">&euro; 44.00 <span class="close">&#10005;</span></div>
+                        <div class="col"><span>{{this.product.price}}</span> <button style="text-decoration: none;"
+                                onclick="removeProduct('{{this._id}}','{{this.product._id}}')"><span
+                                    class="close">&#10005;</span></button>
+                        </div>
                     </div>
                 </div>
                 {{/each}}
@@ -46,19 +49,40 @@
                     <div class="col" style="padding-left:0;">ITEMS 3</div>
                     <div class="col text-right">&euro; 132.00</div>
                 </div>
-                <form>
-                    <p>SHIPPING</p>
-                    <select>
-                        <option class="text-muted">Standard-Delivery- &euro;5.00</option>
-                    </select>
-                    <p>GIVE CODE</p>
-                    <input id="code" placeholder="Enter your code">
-                </form>
+                <br>
+                <p>PAYMENT METHOD</p>
+                <input style="width: 10%;" type="radio" id="offline" name="payment"><label for="offline">
+                    Cash-On-Delivery</label><br>
+                <input style="width: 10%;" type="radio" id="online" name="payment"><label for="online">
+                    Online-Payment</label><br>
+                <div>
+                    <p>Address</p>
+                    <Address> </Address>
+                    <button style="padding: 5px;
+                            background-color: #ff8d00;
+                            font-weight: 600;
+                            border: none;
+                            border-radius: 0rem;
+                            color: #ffffff;
+                            font-size: 1rem;
+                            width: 40%;
+                            height: 2rem;
+                            margin-bottom: 1rem;
+                            float: right;
+                            height: auto;" class="btn">Update</button>
+                </div>
+
+
                 <div class="row" style="border-top: 1px solid rgba(0,0,0,.1); padding: 2vh 0;">
                     <div class="col">TOTAL PRICE</div>
-                    <div class="col text-right">&euro; 137.00</div>
+                    <div class="col text-right" id="totalPrice">&euro; {{this.totalPrice}}</div>
                 </div>
-                <button style="background-color:#dcff00;font-weight:600;" class="btn">CHECKOUT</button>
+                <button style="background-color: #fff700;
+                               font-weight: 600;
+                               border: none;
+                               border-radius: 1rem;
+                               color: #0079fb;
+                               font-size: 1.4rem" class="btn">CHECKOUT</button>
             </div>
         </div>
 
@@ -80,11 +104,36 @@
             },
             method: "post",
             success: (response) => {
-                if (response.removeProduct) {
+                if (response.data.removeProduct) {
                     alert("Product removed from cart")
                     location.reload()
                 } else {
-                    document.getElementById(proId).innerHTML = quantity + count
+                    document.getElementById(proId).innerHTML = response.data.quantity
+
+                }
+                console.log(response, "===================")
+                document.getElementById('totalPrice').innerHTML = response.total
+
+
+            },
+        });
+    }
+
+    function removeProduct(cartId, proId) {
+
+        console.log(cartId, proId)
+        $.ajax({
+            url: "/remove-product",
+            data: {
+                cart: cartId,
+                product: proId,
+
+            },
+            method: "post",
+            success: (response) => {
+                if (response.removeProduct) {
+                    alert("Product removed from cart")
+                    location.reload()
                 }
 
 

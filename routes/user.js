@@ -4,7 +4,7 @@ var router = express.Router();
 var productHelpers = require("../helper/product_helpers");
 var userHelpers = require("../helper/user_helper");
 const verifyLogin = (req, res, next) => {
-  if (req.session.userloggedIn) {
+  if (req.session.LoggedIn) {
     next();
   } else {
     res.redirect("/login");
@@ -14,6 +14,7 @@ const verifyLogin = (req, res, next) => {
 /* GET home page. */
 router.get("/", async (req, res) => {
   let user = req.session.user;
+  console.log(user);
   let cart;
   if (req.session.user)
     cart = await userHelpers.getCartCount(req.session.user._id);
@@ -25,11 +26,11 @@ router.get("/", async (req, res) => {
 });
 //Get Login page
 router.get("/login", (req, res, next) => {
-  if (req.session.userloggedIn) {
+  if (req.session.LoggedIn) {
     res.redirect("/");
   } else {
-    res.render("user/login", { loginErr: req.session.loginErr });
-    req.session.loginErr = false;
+    res.render("user/login", { loginErr: req.session.LoginErr });
+    req.session.LoginErr = false;
   }
 });
 
@@ -40,11 +41,11 @@ router.post("/login", (req, res, next) => {
     .then((response) => {
       console.log(req.body);
       if (response.status) {
-        req.session.user = true;
+        req.session.LoggedIn = true;
         req.session.user = response.user;
         res.redirect("/");
       } else {
-        req.session.loginErr = "Invalid username/email or password";
+        req.session.LoginErr = "Invalid username/email or password";
         res.redirect("/login");
       }
     })
@@ -82,9 +83,12 @@ router.post("/signup", (req, res) => {
 //GET CART PAGE
 router.get("/cart", verifyLogin, async (req, res, next) => {
   let user = req.session.user;
+  console.log(user);
+  let totalPrice = await userHelpers.getTotalPrice(req.session.user._id);
+  console.log(totalPrice, "============================");
   let products = await userHelpers.getCartProducts(req.session.user._id);
   console.log(products);
-  res.render("user/cart", { products, user: req.session.user });
+  res.render("user/cart", { products, user, totalPrice });
 });
 
 //Get Add to cart
@@ -102,7 +106,22 @@ router.get("/add-to-cart/:id", (req, res, next) => {
 
 // CHANGE PRODUCT QUANTITY
 router.post("/change-product-quantity", (req, res, next) => {
-  userHelpers.changeProductQuantity(req.body).then((response) => {
+  userHelpers.changeProductQuantity(req.body).then(async (data) => {
+    const total = await userHelpers.getTotalPrice(req.session.user._id);
+    res.json({ data, total });
+  });
+});
+
+//GET PROFILE PAGE
+router.get("/profile", (req, res) => {
+  let user = req.session.user;
+  if (req.session.user) {
+    res.render("user/profile", { user });
+  }
+});
+
+router.post("/remove-product", (req, res) => {
+  userHelpers.removeProduct(req.body).then((response) => {
     res.json(response);
   });
 });

@@ -199,12 +199,12 @@ module.exports = {
             }
           )
           .then((response) => {
-            resolve({ removeProduct: true });
+            resolve({ removeProduct: true, status: true });
           });
       } else {
         db.get()
           .collection(CART_COLLECTION)
-          .updateOne(
+          .findOneAndUpdate(
             {
               _id: objectId(details.cart),
               "product.item": objectId(details.product),
@@ -216,9 +216,86 @@ module.exports = {
             }
           )
           .then((response) => {
-            resolve(true);
+            const product = response.value.product.find((prod) =>
+              objectId(prod.item).equals(objectId(details.product))
+            );
+            console.log(product);
+            resolve(product, { status: true });
           });
       }
+    });
+  },
+  getTotalPrice: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      let total = await db
+        .get()
+        .collection(CART_COLLECTION)
+        .aggregate([
+          {
+            $match: { user: objectId(userId) },
+          },
+          {
+            $unwind: "$product",
+          },
+          {
+            $project: {
+              item: "$product.item",
+              quantity: "$product.quantity",
+            },
+          },
+          {
+            $lookup: {
+              from: PRODUCT_COLLECTION,
+              localField: "item",
+              foreignField: "_id",
+              as: "product",
+            },
+          },
+          {
+            $project: {
+              item: 1,
+              quantity: 1,
+              product: { $arrayElemAt: ["$product", 0] },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: {
+                $sum: {
+                  $multiply: [
+                    { $toInt: "$quantity" },
+                    { $toInt: "$product.price" },
+                  ],
+                },
+              },
+            },
+          },
+        ])
+        .toArray();
+      resolve(total[0].total);
+    });
+  },
+
+  removeProduct: (details) => {
+    return new Promise(async (resolve, reject) => {
+      db.get()
+        .collection(CART_COLLECTION)
+        .updateOne(
+          {
+            _id: objectId(details.cart),
+          },
+          {
+            $pull: {
+              product: {
+                item: objectId(details.product),
+              },
+            },
+          }
+        )
+        .then((response) => {
+          resolve({ removeProduct: true });
+        });
     });
   },
 };

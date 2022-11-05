@@ -7,7 +7,7 @@ var superAdminHelpers = require("../helper/superAdmin_helpers");
 
 /* VERIFY LOGIN */
 const verifyLogin = (req, res, next) => {
-  if (req.session.superAdminLoggedIn) {
+  if (req.session.LoggedIn) {
     next();
   } else {
     res.redirect("superAdmin/superAdmin-login");
@@ -95,7 +95,7 @@ router.post("/admin-signup", (req, res, next) => {
     .doSignup(req.body)
     .then((response) => {
       console.log(response);
-      req.session.superAdminLoggedIn = true;
+      req.session.LoggedIn = true;
       req.session.admin = response;
       res.redirect("/admin");
     })
@@ -119,14 +119,14 @@ router.post("/admin-signup", (req, res, next) => {
 
 //Get Login page
 router.get("/superAdmin-login", (req, res) => {
-  if (req.session.superAdminLoggedIn) {
+  if (req.session.LoggedIn) {
     res.redirect("/superAdmin");
   } else {
     res.render("superAdmin/superAdmin-login", {
-      superAdminLoginErr: req.session.superAdminLoginErr,
+      LoginErr: req.session.LoginErr,
       superAdmin: true,
     });
-    req.session.superAdminloginErr = false;
+    req.session.LoginErr = false;
   }
 });
 
@@ -137,11 +137,11 @@ router.post("/superAdmin-login", (req, res, next) => {
     .then((response) => {
       console.log(req.body);
       if (response.status) {
-        req.session.superAdminLoggedIn = true;
+        req.session.LoggedIn = true;
         req.session.superAdmin = response.superAdmin;
         res.redirect("/superAdmin");
       } else {
-        req.session.superAdminLoginErr = "Invalid username/email or password";
+        req.session.LoginErr = "Invalid username/email or password";
         res.redirect("superAdmin/superAdmin-login");
       }
     })
