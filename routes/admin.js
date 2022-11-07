@@ -31,6 +31,7 @@ router.post("/add-product", (req, res) => {
   let image = req.files.image;
   console.log(req.files.image);
   productHelpers.addProduct(req.body, (id) => {
+    `  `;
     image.mv("./public/product-images/" + id + ".jpg", (err, done) => {
       if (!err) {
         res.render("admin/add-product", { admin: true });

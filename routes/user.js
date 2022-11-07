@@ -3,6 +3,9 @@ const { response } = require("../app");
 var router = express.Router();
 var productHelpers = require("../helper/product_helpers");
 var userHelpers = require("../helper/user_helper");
+var pincodeDirectory = require("india-pincode-lookup");
+const { Db } = require("mongodb");
+
 const verifyLogin = (req, res, next) => {
   if (req.session.LoggedIn) {
     next();
@@ -83,12 +86,14 @@ router.post("/signup", (req, res) => {
 //GET CART PAGE
 router.get("/cart", verifyLogin, async (req, res, next) => {
   let user = req.session.user;
-  console.log(user);
+  let userDetail = await userHelpers.getUserDetails(user);
+  console.log(
+    userDetail,
+    "==================================================="
+  );
   let totalPrice = await userHelpers.getTotalPrice(req.session.user._id);
-  console.log(totalPrice, "============================");
   let products = await userHelpers.getCartProducts(req.session.user._id);
-  console.log(products);
-  res.render("user/cart", { products, user, totalPrice });
+  res.render("user/cart", { products, user, totalPrice, userDetail });
 });
 
 //Get Add to cart
@@ -108,6 +113,7 @@ router.get("/add-to-cart/:id", (req, res, next) => {
 router.post("/change-product-quantity", (req, res, next) => {
   userHelpers.changeProductQuantity(req.body).then(async (data) => {
     const total = await userHelpers.getTotalPrice(req.session.user._id);
+
     res.json({ data, total });
   });
 });
@@ -120,10 +126,39 @@ router.get("/profile", (req, res) => {
   }
 });
 
+//REM0VE PRODUCT FROM CART
 router.post("/remove-product", (req, res) => {
   userHelpers.removeProduct(req.body).then((response) => {
     res.json(response);
   });
+});
+// GET STATE AND DISTRICT FROM PINCODE
+router.get("/get-address", async (req, res) => {
+  let pin,
+    pincode = req._parsedOriginalUrl.query,
+    pinDetails = {};
+
+  pin = pincodeDirectory.lookup(pincode);
+  pinDetails.state = pin[0].stateName;
+  pinDetails.district = pin[0].districtName;
+  let user = req.session.user;
+  userHelpers.pushUserDetails(pinDetails, user).then(async (response) => {
+    let userDetails = await userHelpers.getUserDetails(user);
+    res.json(userDetails);
+  });
+});
+
+router.get("/update-address", (req, res) => {
+  let address = req._parsedOriginalUrl.query;
+  let user = req.session.user;
+  userHelpers.updateAddress(address, user).then(async (response) => {
+    let userDetails = await userHelpers.getUserDetails(user);
+    res.json(userDetails);
+  });
+});
+
+router.get("/place-order", (req, res) => {
+  console.log(req);
 });
 
 module.exports = router;

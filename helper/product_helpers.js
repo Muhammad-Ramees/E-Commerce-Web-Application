@@ -70,4 +70,14 @@ module.exports = {
         });
     });
   },
+  createAddress: () => {
+    console.log(product);
+    db.get()
+      .collection(PRODUCT_COLLECTION)
+      .insertOne(product)
+      .then((data) => {
+        console.log(data);
+        callback(data.insertedId);
+      });
+  },
 };

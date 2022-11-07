@@ -51,38 +51,99 @@
                 </div>
                 <br>
                 <p>PAYMENT METHOD</p>
-                <input style="width: 10%;" type="radio" id="offline" name="payment"><label for="offline">
+                <input style="width: 10%;" type="radio" id="offline" value="COD" name="payment"><label for="offline">
                     Cash-On-Delivery</label><br>
-                <input style="width: 10%;" type="radio" id="online" name="payment"><label for="online">
+                <input style="width: 10%;" type="radio" id="online" value="ONLINE" name="payment"><label for="online">
                     Online-Payment</label><br>
                 <div>
                     <p>Address</p>
-                    <Address> </Address>
-                    <button style="padding: 5px;
-                            background-color: #ff8d00;
-                            font-weight: 600;
-                            border: none;
-                            border-radius: 0rem;
-                            color: #ffffff;
-                            font-size: 1rem;
-                            width: 40%;
-                            height: 2rem;
-                            margin-bottom: 1rem;
-                            float: right;
-                            height: auto;" class="btn">Update</button>
+                    <div class="form-outline mb-4">
+                        <p id="address">{{userDetail.address}}</p>
+                    </div>
+
+
+                </div><br>
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" style="background: #ff9900;
+                                                                     margin-top: 0;
+                                                                     border: 0;
+                                                                     border-radius: 10rem;
+                                                                     font-size: 1rem;
+                                                                     font-weight: bold;" data-toggle="modal"
+                    data-target="#exampleModalCenter">
+                    Update Address
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+                    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+
+                            <div class="modal-header" style="color: black;flex-direction:column">
+
+
+                                <div class="form-outline ">
+
+                                    <label for="">Pincode</label>
+                                    <input type="number" id="pincode" style="margin-bottom: 0;" name="pincode"
+                                        class="form-control" />
+                                    <button class="btn btn-primary" onclick="getuserDetails()">check Pincode</button>
+                                </div><br>
+                                <div class="form-outline ">
+                                    <label for="">State</label>
+                                    <input type="text" id="state" style="margin-bottom: 0;" name="state"
+                                        class="form-control" />
+                                </div><br>
+
+                                <div class="form-outline ">
+                                    <label for="">District</label>
+                                    <input type="text" id="district" style="margin-bottom: 0;" name="district"
+                                        class="form-control" />
+                                </div><br>
+
+                                <div class="form-outline ">
+                                    <label for="">Address</label>
+                                    <textarea id="Addres" type="text" id="form3Example3" style="margin-bottom: 0;"
+                                        name="address" class="form-control"></textarea>
+                                </div><br>
+
+
+                            </div>
+                            <div class="modal-body">
+                                ...
+                            </div>
+                            <div class="modal-footer">
+                                <button style=" background: #ff0000;
+                                                font-size: .8rem;
+                                                font-weight: bold;
+                                                border: #0a3c0417 solid;
+                                                border-radius: 6px;" type="button" class="btn btn-secondary"
+                                    data-dismiss="modal">Close</button>
+                                <button onclick="updateAddress()" style=" background: #21dd21;
+                                                font-size: .8rem;
+                                                font-weight: bold;
+                                                border: #0a3c0417 solid;
+                                                border-radius: 6px;" type="button" class="btn btn-primary"
+                                    data-dismiss="modal">Save
+                                    changes</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
 
                 <div class="row" style="border-top: 1px solid rgba(0,0,0,.1); padding: 2vh 0;">
                     <div class="col">TOTAL PRICE</div>
-                    <div class="col text-right" id="totalPrice">&euro; {{this.totalPrice}}</div>
+                    <div class="col text-right" id="totalPrice"><span id="total-price">&euro; {{this.totalPrice}}</span>
+                    </div>
                 </div>
                 <button style="background-color: #fff700;
                                font-weight: 600;
                                border: none;
                                border-radius: 1rem;
                                color: #0079fb;
-                               font-size: 1.4rem" class="btn">CHECKOUT</button>
+                               font-size: 1.4rem" onclick="placeOrder()" class="btn">CHECKOUT</button>
             </div>
         </div>
 
@@ -90,6 +151,60 @@
 </section>
 
 <script>
+    function placeOrder() {
+        let address = document.getElementById('address').innerHTML;
+        let totalPrice = document.getElementById('total-price').innerHTML;
+        let paymentMode = document.getElementsByName('payment');
+
+        for (i = 0; i < paymentMode.length; i++) {
+            if (paymentMode[i].checked) {
+                paymentMode = paymentMode[i].value;
+            }
+        }
+        $.ajax({
+            url: '/place-order',
+            data: {
+                address,
+                totalPrice,
+                paymentMode
+            },
+            method: 'get',
+            success: (response) => {
+                conssole.log(response)
+            }
+
+        })
+
+    }
+
+    function updateAddress() {
+        let address = document.getElementById('Addres').value;
+
+        $.ajax({
+            url: '/update-address',
+            data: address,
+            method: 'get',
+            success: (response) => {
+                document.getElementById('address').innerHTML = response.address
+            }
+        })
+    }
+
+
+    function getuserDetails() {
+        let pincode = document.getElementById('pincode').value;
+
+        $.ajax({
+            url: '/get-address',
+            data: pincode,
+            method: 'get',
+            success: (response) => {
+                document.getElementById('state').value = response.stateName
+                document.getElementById('district').value = response.districtName;
+            }
+        })
+    }
+
     function changeQuantity(cartId, proId, count) {
         let quantity = parseInt(document.getElementById(proId).innerHTML);
         count = parseInt(count)

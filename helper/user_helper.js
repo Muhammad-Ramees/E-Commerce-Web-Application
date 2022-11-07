@@ -298,4 +298,56 @@ module.exports = {
         });
     });
   },
+  pushUserDetails: (pincode, userId) => {
+    return new Promise((resolve, reject) => {
+      db.get()
+        .collection(USER_COLLECTION)
+        .updateOne(
+          { _id: objectId(userId._id) },
+          {
+            $set: {
+              stateName: pincode.state,
+              districtName: pincode.district,
+            },
+          }
+        )
+        .then((response) => {
+          console.log({ response });
+          resolve();
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  },
+  getUserDetails: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      let user = await db
+        .get()
+        .collection(USER_COLLECTION)
+        .findOne({ _id: objectId(userId._id) });
+
+      resolve(user);
+    });
+  },
+  updateAddress: (address, userId) => {
+    return new Promise((resolve, reject) => {
+      db.get()
+        .collection(USER_COLLECTION)
+        .updateOne(
+          { _id: objectId(userId._id) },
+          {
+            $set: {
+              address: address,
+            },
+          }
+        )
+        .then(() => {
+          resolve();
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  },
 };
