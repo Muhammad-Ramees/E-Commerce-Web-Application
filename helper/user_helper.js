@@ -4,6 +4,7 @@ const {
   USER_COLLECTION,
   CART_COLLECTION,
   PRODUCT_COLLECTION,
+  ORDER_COLLECTION,
 } = require("../config/collection");
 
 const db = require("../config/connection");
@@ -350,4 +351,9 @@ module.exports = {
         });
     });
   },
+  placeOrder:(orderData,cartProducts)=>{
+    return new Promise(async (resolve, reject) => {
+      
+    });
+  }
 };

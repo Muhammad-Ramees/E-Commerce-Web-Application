@@ -33,20 +33,20 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(fileUpload());
 
-app.use(
-  session({
-    secret: "key",
-    store: MongoStore.create({
-      mongoUrl: "mongodb://localhost:27017/shopping",
-      autoRemove: "interval",
-      autoRemoveInterval: 10, // In minutes. Default
-    }),
-  })
-);
-// app.use(session({ secret: "key", cookie: { maxAge: 6000000 } }));
+// app.use(
+//   session({
+//     secret: "key",
+//     store: MongoStore.create({
+//       mongoUrl: "mongodb://localhost:27017/shopping",
+//       autoRemove: "interval",
+//       autoRemoveInterval: 10, // In minutes. Default
+//     }),
+//   })
+// );
+app.use(session({ secret: "key", cookie: { maxAge: 60000000 } }));
 db.connect((err) => {
   if (err) {
-    console.log("Connection Error ========== " + err);
+    console.log("Connection Error ========== " , err);
   } else {
     console.log("Database conected to port 27017");
   }

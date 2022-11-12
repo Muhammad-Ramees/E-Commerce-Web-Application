@@ -138,9 +138,16 @@ router.get("/get-address", async (req, res) => {
     pincode = req._parsedOriginalUrl.query,
     pinDetails = {};
 
-  pin = pincodeDirectory.lookup(pincode);
-  pinDetails.state = pin[0].stateName;
+  pin = pincodeDirectory.lookup(pincode); console.log(pin);
+  console.log(pin.length,"Length=======================");
+  if(pin.length>0){
+    pinDetails.state = pin[0].stateName;
   pinDetails.district = pin[0].districtName;
+  }else{
+    console.log("invalid pincode");
+  }
+ 
+  
   let user = req.session.user;
   userHelpers.pushUserDetails(pinDetails, user).then(async (response) => {
     let userDetails = await userHelpers.getUserDetails(user);
@@ -157,8 +164,14 @@ router.get("/update-address", (req, res) => {
   });
 });
 
-router.get("/place-order", (req, res) => {
-  console.log(req);
+router.post("/place-order", async (req, res) => {
+  let user = req.session.user._id;
+  let cartProducts = await userHelpers.getCartProducts(user)
+  req.body.userId=user
+  console.log(requestAnimationFrame);
+  userHelpers.placeOrder(req, cartProducts).then(() =>{
+  })
+
 });
 
 module.exports = router;

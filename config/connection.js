@@ -4,14 +4,15 @@ const state = {
 };
 
 function connect(done) {
-  const url = "mongodb://localhost:27017";
+  const url = "mongodb://127.0.0.1:27017";
   const dbname = "ECOMMERCE";
 
   mongoClient.connect(url, (err, data) => {
     if (err) return done(err);
+
     state.db = data.db(dbname);
+    done();
   });
-  done();
 }
 
 function get() {

@@ -104,7 +104,7 @@
 
                                 <div class="form-outline ">
                                     <label for="">Address</label>
-                                    <textarea id="Addres" type="text" id="form3Example3" style="margin-bottom: 0;"
+                                    <textarea id="Addres" type="text" style="margin-bottom: 0;"
                                         name="address" class="form-control"></textarea>
                                 </div><br>
 
@@ -154,21 +154,23 @@
     function placeOrder() {
         let address = document.getElementById('address').innerHTML;
         let totalPrice = document.getElementById('total-price').innerHTML;
-        let paymentMode = document.getElementsByName('payment');
-
-        for (i = 0; i < paymentMode.length; i++) {
-            if (paymentMode[i].checked) {
-                paymentMode = paymentMode[i].value;
+        let paymentMethod 
+    
+        if(document.getElementById('offline').checked) {
+            paymentMethod= "COD"
+        }else if(document.getElementById('online').checked) {
+            paymentMethod= "ONLINE"
             }
-        }
+            console.log(paymentMethod)
+        
         $.ajax({
             url: '/place-order',
             data: {
                 address,
                 totalPrice,
-                paymentMode
+                paymentMethod,
             },
-            method: 'get',
+            method: 'post',
             success: (response) => {
                 conssole.log(response)
             }
