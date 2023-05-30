@@ -3,6 +3,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="/stylesheets/cart.css">
+<link rel="stylesheet" href="/stylesheets/order-placed.css">
+
 
 <section class="table-section">
     <div class="card">
@@ -104,9 +106,16 @@
 
                                 <div class="form-outline ">
                                     <label for="">Address</label>
-                                    <textarea id="Addres" type="text" style="margin-bottom: 0;"
-                                        name="address" class="form-control"></textarea>
+                                    <textarea id="Addres" type="text" style="margin-bottom: 0;" name="address"
+                                        class="form-control"></textarea>
                                 </div><br>
+
+                                <div class="form-outline ">
+                                    <label for="">Phone No : </label>
+                                    <input type="text" id="phoneNo" style="margin-bottom: 0;" name="phoneNo"
+                                        class="form-control" />
+                                </div><br>
+
 
 
                             </div>
@@ -132,37 +141,91 @@
                     </div>
                 </div>
 
+                <!-- Modal -->
+                <div class="modal fade" id="checkoutmodel" tabindex="-1" role="dialog"
+                    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+
+                            <div class="modal-header" style="color: black;flex-direction:column;align-item:center">
+
+
+                                <section>
+
+                                    <div class="main-container">
+                                        <div class="check-container">
+                                            <div class="check-background">
+                                                <svg viewBox="0 0 65 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M7 25L27.3077 44L58.5 7" stroke="white" stroke-width="13"
+                                                        stroke-linecap="round" stroke-linejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <div class="check-shadow"></div>
+                                        </div> Order Confirmed
+
+                                    </div>
+                                </section>
+
+
+                            </div>
+                            <div class="modal-body">
+                            </div>
+                            <div class="modal-footer">
+                                <button style=" background: #ff0000;
+                                                font-size: .8rem;
+                                                font-weight: bold;
+                                                border: #0a3c0417 solid;
+                                                border-radius: 6px;" type="button" class="btn btn-secondary"
+                                    data-dismiss="modal" onclick="location.href='/orders'">Go to orders</button>
+                                <button onclick="location.href='/'" style=" background: #21dd21;
+                                                font-size: .8rem;
+                                                font-weight: bold;
+                                                border: #0a3c0417 solid;
+                                                border-radius: 6px;" type="button" class="btn btn-primary"
+                                    data-dismiss="modal">Shopping </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
                 <div class="row" style="border-top: 1px solid rgba(0,0,0,.1); padding: 2vh 0;">
                     <div class="col">TOTAL PRICE</div>
                     <div class="col text-right" id="totalPrice"><span id="total-price">&euro; {{this.totalPrice}}</span>
                     </div>
                 </div>
-                <button style="background-color: #fff700;
+                {{!-- <button style="background-color: #fff700;
                                font-weight: 600;
                                border: none;
                                border-radius: 1rem;
                                color: #0079fb;
-                               font-size: 1.4rem" onclick="placeOrder()" class="btn">CHECKOUT</button>
+                               font-size: 1.4rem" onclick="()" class="btn">CHECKOUT</button> --}}
+                <button type="button" onclick="placeOrder()" class="btn btn-primary" style="background: #ff9900;
+                                                                     margin-top: 0;
+                                                                     border: 0;
+                                                                     border-radius: 10rem;
+                                                                     font-size: 1rem;
+                                                                     font-weight: bold;">
+                    CHECKOUT
+                </button>
             </div>
         </div>
-
-    </div>
+        {{!-- data-toggle="modal"
+        data-target="#checkoutmodel" --}}
 </section>
+
 
 <script>
     function placeOrder() {
         let address = document.getElementById('address').innerHTML;
         let totalPrice = document.getElementById('total-price').innerHTML;
-        let paymentMethod 
-    
-        if(document.getElementById('offline').checked) {
-            paymentMethod= "COD"
-        }else if(document.getElementById('online').checked) {
-            paymentMethod= "ONLINE"
-            }
-            console.log(paymentMethod)
-        
+        let paymentMethod
+
+        if (document.getElementById('offline').checked) {
+            paymentMethod = "COD"
+        } else if (document.getElementById('online').checked) {
+            paymentMethod = "ONLINE"
+        }
         $.ajax({
             url: '/place-order',
             data: {
@@ -172,12 +235,69 @@
             },
             method: 'post',
             success: (response) => {
-                conssole.log(response)
+                alert(response.COD_SUCCESS)
+                if (response.COD_SUCCESS) {
+                    location.href = `/order-approved/${response.orderId}`;
+                } else {
+                    console.log(response)
+                    razorpayPayment(response)
+
+                }
             }
 
         })
+    }
+    function razorpayPayment(order) {
+        console.log(order)
+        var options = {
+            "key": "rzp_test_VLp5PN2oRUJwLd", // Enter the Key ID generated from the Dashboard
+            "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "currency": "INR",
+            "name": "FLIPKART",
+            "description": "Test Transaction",
+            "image": "https://1000logos.net/wp-content/uploads/2021/02/Flipkart-logo-768x432.png",
+            "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+            "handler": function (response) {
+                verifyPayment(response, order)
+            },
+            "prefill": {
+                "name": "Gaurav Kumar",
+                "email": "gaurav.kumar@example.com",
+                "contact": "9999999999"
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+
+
 
     }
+
+    function verifyPayment(payment, order) {
+        $.ajax({
+            url: '/verify-payment',
+            data: {
+                payment,
+                order
+            },
+            method: 'post',
+            success: (response) => {
+                if (response.status) {
+                    location.href = "/orders"
+
+                } else {
+                }
+            }
+        })
+    }
+
+
 
     function updateAddress() {
         let address = document.getElementById('Addres').value;
@@ -254,7 +374,7 @@
                 }
 
 
-            },
+            }
         });
     }
 

@@ -1,6 +1,13 @@
 var express = require("express");
 const { response } = require("../app");
 const adminHelpers = require("../helper/admin_helpers");
+const userHelpers = require("../helper/user_helper");
+var {
+  RemoveBgResult,
+  RemoveBgError,
+  removeBackgroundFromImageBase64,
+} = require("remove.bg");
+var fs = require("fs");
 var router = express.Router();
 var productHelpers = require("../helper/product_helpers");
 
@@ -29,10 +36,29 @@ router.get("/add-product", verifyLogin, (req, res, next) => {
 /*POST ADD PRODUCT TO PRODUCTHELPERS =============================*/
 router.post("/add-product", (req, res) => {
   let image = req.files.image;
+
   console.log(req.files.image);
+
   productHelpers.addProduct(req.body, (id) => {
-    `  `;
     image.mv("./public/product-images/" + id + ".jpg", (err, done) => {
+      const localFile = "./public/product-images/" + id + ".jpg";
+      const base64img = fs.readFileSync(localFile, { encoding: "base64" });
+      const outputFile = "./public/product-images/" + id + ".jpg";
+      removeBackgroundFromImageBase64({
+        base64img,
+        apiKey: "yvWsrtPwdV2YqW2qWXjW2FRz",
+        size: "regular",
+        type: "product",
+        outputFile,
+      })
+        .then((result) => {
+          console.log(`File saved to ${outputFile}`);
+          console.log(result, "resukt----------");
+        })
+        .catch((errors) => {
+          console.log(JSON.stringify(errors));
+        });
+
       if (!err) {
         res.render("admin/add-product", { admin: true });
       } else {
@@ -134,6 +160,16 @@ router.post("/admin-login", (req, res, next) => {
 router.get("/admin-logout", (req, res) => {
   req.session.destroy();
   res.redirect("admin/admin-login");
+});
+
+router.get("/admin-orders", async (req, res) => {
+  let orders = await adminHelpers.getAllOrders();
+  res.render("admin/admin-orders", { orders });
+});
+
+router.get("/admin-users", async (req, res) => {
+  let users = await adminHelpers.getAllUsers();
+  res.render("admin/admin-users", { users, admin: true });
 });
 
 module.exports = router;

@@ -4,7 +4,8 @@ const state = {
 };
 
 function connect(done) {
-  const url = "mongodb://127.0.0.1:27017";
+  const url =
+    "mongodb+srv://ADMIN_DB:AdminDb@124@cluster0.mq1ge5j.mongodb.net/?retryWrites=true&w=majority";
   const dbname = "ECOMMERCE";
 
   mongoClient.connect(url, (err, data) => {

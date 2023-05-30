@@ -1,0 +1,33 @@
+<section class="m-5" id="Table">
+    <div class="container">
+        <div class="row">
+            {{!-- <a class="btn btnn ml-auto m-2 mr-3" href="/admin/add-product">Add product</a> --}}
+        </div>
+        <div class="frost-table">
+            <table id="example" class="table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th Date</th>
+                        <th>Order Id</th>
+                        <th>Status</th>
+                        <th>View order</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each orders}}
+                    <tr>
+                        <td>{{this.date}}</td>
+                        <td>{{this.userName}}</td>
+                        <td>{{this.status}}</td>
+                        <td>{{this.totalPrice}}</td>
+
+                    </tr>
+                    {{/each}}
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</section>

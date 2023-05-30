@@ -10,8 +10,8 @@ var userRouter = require("./routes/user");
 var adminRouter = require("./routes/admin");
 var superAdminRouter = require("./routes/superAdmin");
 var fileUpload = require("express-fileupload");
-var db = require("./config/connection");
 
+var db = require("./config/connection");
 var app = express();
 
 // view engine setup
@@ -33,20 +33,20 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(fileUpload());
 
-// app.use(
-//   session({
-//     secret: "key",
-//     store: MongoStore.create({
-//       mongoUrl: "mongodb://localhost:27017/shopping",
-//       autoRemove: "interval",
-//       autoRemoveInterval: 10, // In minutes. Default
-//     }),
-//   })
-// );
-app.use(session({ secret: "key", cookie: { maxAge: 60000000 } }));
+app.use(
+  session({
+    secret: "key",
+    store: MongoStore.create({
+      mongoUrl: "mongodb://127.0.0.1:27017/shopping",
+      autoRemove: "interval",
+      autoRemoveInterval: 1, // In minutes. Default
+    }),
+  })
+);
+// app.use(session({ secret: "key", cookie: { maxAge: 360000000 } }));
 db.connect((err) => {
   if (err) {
-    console.log("Connection Error ========== " , err);
+    console.log("Connection Error ========== ", err);
   } else {
     console.log("Database conected to port 27017");
   }

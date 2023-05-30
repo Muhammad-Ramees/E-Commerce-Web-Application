@@ -14,3 +14,7 @@ function addToCart(proId) {
     },
   });
 }
+
+$(document).ready(function () {
+  $("#example").DataTable();
+});

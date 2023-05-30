@@ -1,9 +1,11 @@
+const { Collection } = require("mongodb");
 var objectId = require("mongodb").ObjectId;
 const {
-  ADMIN_COLLECTION,
   USER_COLLECTION,
   CART_COLLECTION,
   PRODUCT_COLLECTION,
+  ORDER_COLLECTION,
+  ADMIN_COLLECTION,
 } = require("../config/collection");
 
 const db = require("../config/connection");
@@ -49,6 +51,57 @@ module.exports = {
       } else {
         console.log("user not Found");
       }
+    });
+  },
+  getAllOrders: () => {
+    return new Promise(async (resolve, reject) => {
+      let orders = await db
+        .get()
+        .collection(ORDER_COLLECTION)
+        .aggregate([
+          {
+            $lookup: {
+              from: USER_COLLECTION,
+              localField: "userId",
+              foreignField: "_id",
+              pipeline: [
+                {
+                  $project: {
+                    userName: "$fullname",
+                    email: "$email",
+                  },
+                },
+              ],
+              as: "userDetails",
+            },
+          },
+          {
+            $unwind: "$userDetails",
+          },
+          {
+            $project: {
+              userId: "$userId",
+              userName: "$userDetails.userName",
+              email: "$userDetails.email",
+              _id: "$_id",
+              deliveryDetails: "$deliveryDetails",
+              products: "$products",
+              status: "$status",
+              date: "$date",
+              totalPrice: "$totalPrice",
+            },
+          },
+        ])
+        .toArray();
+      console.log(orders, "============0000============000=");
+      resolve(orders);
+    });
+  },
+
+  getAllUsers: () => {
+    return new Promise(async (resolve, reject) => {
+      let users = await db.get().collection(USER_COLLECTION).find().toArray();
+      resolve(users);
     });
   },
 };

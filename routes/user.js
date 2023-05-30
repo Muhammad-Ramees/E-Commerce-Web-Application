@@ -1,5 +1,5 @@
 var express = require("express");
-const { response } = require("../app");
+const { response, routes } = require("../app");
 var router = express.Router();
 var productHelpers = require("../helper/product_helpers");
 var userHelpers = require("../helper/user_helper");
@@ -17,14 +17,12 @@ const verifyLogin = (req, res, next) => {
 /* GET home page. */
 router.get("/", async (req, res) => {
   let user = req.session.user;
-  console.log(user);
   let cart;
   if (req.session.user)
     cart = await userHelpers.getCartCount(req.session.user._id);
 
   productHelpers.getAllProducts().then((products) => {
     res.render("user/view-products", { products, user, cart });
-    console.log(cart);
   });
 });
 //Get Login page
@@ -42,7 +40,6 @@ router.post("/login", (req, res, next) => {
   userHelpers
     .doLogin(req.body)
     .then((response) => {
-      console.log(req.body);
       if (response.status) {
         req.session.LoggedIn = true;
         req.session.user = response.user;
@@ -70,9 +67,7 @@ router.get("/signup", (req, res) => {
 
 //Post Signup page
 router.post("/signup", (req, res) => {
-  console.log("gihtuodlcx=================================");
   let image = req.files.image;
-  console.log(image, "images=================");
   userHelpers.doSignup(req.body).then((user) => {
     image.mv("./public/profile-img/" + user._id + ".jpg", (err, done) => {
       if (!err) {
@@ -87,10 +82,6 @@ router.post("/signup", (req, res) => {
 router.get("/cart", verifyLogin, async (req, res, next) => {
   let user = req.session.user;
   let userDetail = await userHelpers.getUserDetails(user);
-  console.log(
-    userDetail,
-    "==================================================="
-  );
   let totalPrice = await userHelpers.getTotalPrice(req.session.user._id);
   let products = await userHelpers.getCartProducts(req.session.user._id);
   res.render("user/cart", { products, user, totalPrice, userDetail });
@@ -98,7 +89,6 @@ router.get("/cart", verifyLogin, async (req, res, next) => {
 
 //Get Add to cart
 router.get("/add-to-cart/:id", (req, res, next) => {
-  console.log("api-call");
   userHelpers
     .addToCart(req.params.id, req.session.user._id)
     .then(() => {
@@ -138,16 +128,14 @@ router.get("/get-address", async (req, res) => {
     pincode = req._parsedOriginalUrl.query,
     pinDetails = {};
 
-  pin = pincodeDirectory.lookup(pincode); console.log(pin);
-  console.log(pin.length,"Length=======================");
-  if(pin.length>0){
+  pin = pincodeDirectory.lookup(pincode);
+  if (pin.length > 0) {
     pinDetails.state = pin[0].stateName;
-  pinDetails.district = pin[0].districtName;
-  }else{
+    pinDetails.district = pin[0].districtName;
+  } else {
     console.log("invalid pincode");
   }
- 
-  
+
   let user = req.session.user;
   userHelpers.pushUserDetails(pinDetails, user).then(async (response) => {
     let userDetails = await userHelpers.getUserDetails(user);
@@ -165,13 +153,61 @@ router.get("/update-address", (req, res) => {
 });
 
 router.post("/place-order", async (req, res) => {
+  let total = await userHelpers.getTotalPrice(req.session.user._id);
   let user = req.session.user._id;
-  let cartProducts = await userHelpers.getCartProducts(user)
-  req.body.userId=user
-  console.log(requestAnimationFrame);
-  userHelpers.placeOrder(req, cartProducts).then(() =>{
-  })
+  let cartProducts = await userHelpers.getCartProductList(user);
+  let order = req.body;
+  order.userId = user;
 
+  userHelpers.placeOrder(order, cartProducts).then((response) => {
+    let orderDetails = response.ops[0];
+    let orderId = response.insertedId;
+    if (order.paymentMethod === "COD") {
+      res.json({ COD_SUCCESS: true, orderId });
+    } else if (order.paymentMethod === "ONLINE") {
+      userHelpers
+        .generateRazorPay(response.insertedId, total)
+        .then((response) => {
+          console.log(response, "response cl========================");
+          response.COD_SUCCESS = false;
+          res.json(response);
+        });
+    } else {
+      console.log("Please submit a payment method ");
+    }
+  });
+});
+router.get("/order-approved/:id", async (req, res) => {
+  let orderId = req.params.id;
+  let ApprovedOrder = await userHelpers.getOrderApproved(orderId);
+  res.render("user/order-success", { ApprovedOrder });
+});
+
+router.post("/verify-payment", (req, res) => {
+  userHelpers.verifyRazorpayPayment(req.body).then(() => {
+    console.log(
+      req.body,
+      "req.body+++++++++++++++++++++++++++++++++++++++++++++++"
+    );
+    userHelpers
+      .chanmgePaymentStatus(req.body["order[receipt]"])
+      .then(() => {
+        console.log("Payment Successfull");
+        res.json({ status: true });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.json({ status: false, errMsg: "" });
+      });
+  });
+});
+// router.get("/order-success", (req, res) => {
+// res.render
+// });
+
+router.get("/orders", async (req, res) => {
+  let orders = await userHelpers.getOrders(req.session.user._id);
+  res.render("user/orders", { user: req.session.user, orders });
 });
 
 module.exports = router;
